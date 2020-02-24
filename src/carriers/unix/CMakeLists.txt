@@ -13,7 +13,7 @@ yarp_prepare_plugin(unix_stream
                     INTERNAL
                     QUIET)
 
-if(ENABLE_unix)
+if(ENABLE_unix_stream)
   yarp_add_plugin(yarp_unix_stream)
   target_sources(yarp_unix_stream PRIVATE UnixSocketCarrier.cpp
                                           UnixSocketCarrier.h
