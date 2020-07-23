@@ -34,7 +34,7 @@ bool UnixSocketCarrier::requireAck() const
 
 bool UnixSocketCarrier::isConnectionless() const
 {
-    return true;
+    return false;
 }
 
 bool UnixSocketCarrier::canEscape() const
