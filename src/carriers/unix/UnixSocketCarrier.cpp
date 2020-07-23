@@ -19,8 +19,6 @@
 using namespace yarp::os;
 namespace fs = yarp::conf::filesystem;
 
-// The message queue is available only for ports on the same machine, the size
-// of int is unique.
 
 // FIXME: This method should be available somewhere in YARP
 static std::string getYARPRuntimeDir()
