@@ -19,9 +19,10 @@
 using namespace yarp::os;
 namespace fs = yarp::conf::filesystem;
 
+namespace {
 
 // FIXME: This method should be available somewhere in YARP
-static std::string getYARPRuntimeDir()
+std::string getYARPRuntimeDir()
 {
     static std::mutex m;
     std::lock_guard<std::mutex> lock(m);
@@ -58,6 +59,26 @@ static std::string getYARPRuntimeDir()
     return {};
 }
 
+/**
+ * @brief isUnixSockSupported
+ * @param proto, contains the information of the connection
+ * @return true if the remote and the local port are on the same host
+ */
+bool isUnixSockSupported(ConnectionState& proto) // FIXME Why is this method unused?
+{
+    yarp::os::Contact remote = proto.getStreams().getRemoteAddress();
+    yarp::os::Contact local = proto.getStreams().getLocalAddress();
+
+    if (remote.getHost() != local.getHost()) {
+        yCError(UNIXSOCK_CARRIER,
+                "The ports are on different machines, unix socket not supported...");
+        return false;
+    }
+    return true;
+}
+
+} // namespace
+
 yarp::os::Carrier* UnixSocketCarrier::create() const
 {
     return new UnixSocketCarrier();
@@ -80,20 +101,6 @@ bool UnixSocketCarrier::isConnectionless() const
 
 bool UnixSocketCarrier::canEscape() const
 {
-    return true;
-}
-
-bool UnixSocketCarrier::isUnixSockSupported(ConnectionState& proto)
-{
-    yarp::os::Contact remote = proto.getStreams().getRemoteAddress();
-    yarp::os::Contact local = proto.getStreams().getLocalAddress();
-
-    if (remote.getHost() != local.getHost()) {
-        yCError(
-            UNIXSOCK_CARRIER,
-            "The ports are on different machines, unix socket not supported...");
-        return false;
-    }
     return true;
 }
 
@@ -121,11 +128,16 @@ void UnixSocketCarrier::getHeader(Bytes& header) const
 
 bool UnixSocketCarrier::sendIndex(ConnectionState& proto, SizedWriter& writer)
 {
+    YARP_UNUSED(proto);
+    YARP_UNUSED(writer);
+
     return true;
 }
 
 bool UnixSocketCarrier::expectIndex(ConnectionState& proto)
 {
+    YARP_UNUSED(proto);
+
     return true;
 }
 
@@ -146,8 +158,7 @@ bool UnixSocketCarrier::becomeUnixSocket(ConnectionState& proto, bool sender)
     Contact remote = proto.getStreams().getRemoteAddress();
     Contact local = proto.getStreams().getLocalAddress();
 
-    proto.takeStreams(YARP_NULLPTR); // free up port from tcp
-
+    proto.takeStreams(nullptr); // free up port from tcp
 
     std::string runtime_dir = getYARPRuntimeDir();
 
@@ -168,10 +179,10 @@ bool UnixSocketCarrier::becomeUnixSocket(ConnectionState& proto, bool sender)
 
     if (!stream->open(sender)) {
         delete stream;
-        stream = YARP_NULLPTR;
+        stream = nullptr;
         return false;
     }
-    yAssert(stream != YARP_NULLPTR);
+    yAssert(stream != nullptr);
 
     proto.takeStreams(stream);
     return true;
